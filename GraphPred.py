@@ -1,0 +1,59 @@
+import pandas as pd
+
+import yfinance as yf
+
+from fbprophet import Prophet
+# from fbprophet.plot import plot_plotly, plot_components_plotly
+import matplotlib.pyplot as plt
+
+import plotly.graph_objects as go
+
+from datetime import datetime
+from datetime import timedelta
+import warnings
+
+warnings.filterwarnings('ignore')
+def graph(coin_input):
+    warnings.filterwarnings('ignore')
+    pd.options.display.float_format = '${:,.2f}'.format
+
+    today = datetime.today().strftime('%Y-%m-%d')
+    start_date = '2016-01-01'
+
+    #str = input("Enter the coin u wish to see(format ETC-USD)")
+
+    ethdf = yf.download(coin_input, start_date, today)
+
+    ethdf.reset_index(inplace=True)
+    ethdf.columns
+
+    df = ethdf[["Date", "Open"]]
+
+    new_names = {
+        "Date": "ds",
+        "Open": "y",
+    }
+
+    df.rename(columns=new_names, inplace=True)
+
+    x = df["ds"]
+    y = df["y"]
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(x=x, y=y))
+
+    m = Prophet(
+        seasonality_mode="multiplicative"
+    )
+    m.fit(df)
+
+    future = m.make_future_dataframe(periods=365)
+
+    forecast = m.predict(future)
+
+    next_day = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+
+    m.plot(forecast)
+    plt.show()
+

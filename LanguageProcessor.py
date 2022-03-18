@@ -6,11 +6,9 @@ from nltk.sentiment import SentimentAnalyzer
 from nltk.sentiment.util import *
 from nltk import tokenize
 import nltk
-import pandas
 
 dataset = pd.read_csv('test-dataset.csv')
-nltk.download('subjectivity')
-nltk.download('punkt')
+
 nltk.download('vader_lexicon')
 
 n_instances = 100
@@ -24,7 +22,11 @@ train_obj_docs = obj_docs[:80]
 test_obj_docs = obj_docs[80:100]
 training_docs = train_subj_docs+train_obj_docs
 testing_docs = test_subj_docs+test_obj_docs
-
+new_Words={
+    'unauthorized':-0.2,
+    'fixed':0.1,
+    'compromised':-0.2
+}
 sentim_analyzer = SentimentAnalyzer()
 
 all_words_neg = sentim_analyzer.all_words([mark_negation(doc) for doc in training_docs])
@@ -41,8 +43,8 @@ trainer = NaiveBayesClassifier.train
 
 classifier = sentim_analyzer.train(trainer, training_set)
 
-for key, value in sorted(sentim_analyzer.evaluate(test_set).items()):
-    print('{0}: {1}'.format(key, value))
+#for key, value in sorted(sentim_analyzer.evaluate(test_set).items()):
+ #   print('{0}: {1}'.format(key, value))
 
 # dataset['title']=dataset['title'].astype(str)
 # dataset['description']= dataset['description'].astype(str)
@@ -60,7 +62,8 @@ for key, value in sorted(sentim_analyzer.evaluate(test_set).items()):
 #     for k in sorted(ss):
 #         print('{0}: {1}, '.format(k, ss[k]), end='')
 #         print()
-
+SIA = SentimentIntensityAnalyzer()
+SIA.lexicon.update(new_Words)
 
 def sentimentanalysis(title, desc):
     sentence=title
@@ -69,7 +72,7 @@ def sentimentanalysis(title, desc):
     sentence.extend(lines_list)
 
     for sentence in sentence:
-        sid = SentimentIntensityAnalyzer()
+        sid = SIA
         print(sentence)
         ss = sid.polarity_scores(sentence)
         for k in sorted(ss):
